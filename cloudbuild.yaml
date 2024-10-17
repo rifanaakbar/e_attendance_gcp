@@ -1,0 +1,9 @@
+steps:
+  - name: 'node'
+    entrypoint: 'bash'
+    args: ['-c', 'npm install && npm run build']
+    dir: './frontend'  # Correct directory where your frontend code is located
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args: ['-c', 'gsutil -m rsync -r frontend/dist/ gs://e_attandance_frontend']  # Ensure path to dist is correct
