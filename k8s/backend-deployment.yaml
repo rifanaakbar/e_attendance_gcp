@@ -1,249 +1,61 @@
-apiVersion: apps/v1
-kind: Deployment
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
 metadata:
+  name: "e-attendance-deployment"
+  namespace: "default"
   labels:
-    app: e-attendance-deployment
-  managedFields:
-    - apiVersion: apps/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-        'f:spec':
-          'f:progressDeadlineSeconds': {}
-          'f:replicas': {}
-          'f:revisionHistoryLimit': {}
-          'f:selector': {}
-          'f:strategy':
-            'f:rollingUpdate':
-              .: {}
-              'f:maxSurge': {}
-              'f:maxUnavailable': {}
-            'f:type': {}
-          'f:template':
-            'f:metadata':
-              'f:labels':
-                .: {}
-                'f:app': {}
-            'f:spec':
-              'f:containers':
-                'k:{"name":"backend-sha256-1"}':
-                  .: {}
-                  'f:image': {}
-                  'f:imagePullPolicy': {}
-                  'f:name': {}
-                  'f:resources': {}
-                  'f:terminationMessagePath': {}
-                  'f:terminationMessagePolicy': {}
-              'f:dnsPolicy': {}
-              'f:restartPolicy': {}
-              'f:schedulerName': {}
-              'f:securityContext': {}
-              'f:terminationGracePeriodSeconds': {}
-      manager: unknown
-      operation: Update
-      time: '2024-10-17T11:48:21Z'
-    - apiVersion: apps/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:annotations':
-            .: {}
-            'f:deployment.kubernetes.io/revision': {}
-        'f:status':
-          'f:availableReplicas': {}
-          'f:conditions':
-            .: {}
-            'k:{"type":"Available"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:lastUpdateTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-            'k:{"type":"Progressing"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:lastUpdateTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-          'f:observedGeneration': {}
-          'f:readyReplicas': {}
-          'f:replicas': {}
-          'f:updatedReplicas': {}
-      manager: kube-controller-manager
-      operation: Update
-      subresource: status
-      time: '2024-10-17T11:48:45Z'
-  name: e-attendance-deployment
-  namespace: default
+    app: "e-attendance-deployment"
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: e-attendance-deployment
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+      app: "e-attendance-deployment"
   template:
     metadata:
       labels:
-        app: e-attendance-deployment
+        app: "e-attendance-deployment"
     spec:
       containers:
-        - image: >-
-            gcr.io/e-attendance-hackathon/github.com/rifanaakbar/e_attendance_gcp
-          imagePullPolicy: IfNotPresent
-          name: backend-sha256-1
+      - name: "backend"
+        image: "gcr.io/e-attendance-hackathon/backend:latest"
+        ports:
+        - containerPort: 8000  # Specify the port your app listens on
 ---
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
+apiVersion: "autoscaling/v2"
+kind: "HorizontalPodAutoscaler"
 metadata:
+  name: "e-attendance-deployment-hpa-9ayt"
+  namespace: "default"
   labels:
-    app: e-attendance-deployment
-  managedFields:
-    - apiVersion: autoscaling/v2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-        'f:spec':
-          'f:maxReplicas': {}
-          'f:metrics': {}
-          'f:minReplicas': {}
-          'f:scaleTargetRef':
-            'f:apiVersion': {}
-            'f:kind': {}
-            'f:name': {}
-      manager: unknown
-      operation: Update
-      time: '2024-10-17T11:48:21Z'
-    - apiVersion: autoscaling/v2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:status':
-          'f:conditions':
-            .: {}
-            'k:{"type":"AbleToScale"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-            'k:{"type":"ScalingActive"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-            'k:{"type":"ScalingLimited"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-          'f:currentMetrics': {}
-          'f:currentReplicas': {}
-          'f:desiredReplicas': {}
-      manager: vpa-recommender
-      operation: Update
-      subresource: status
-      time: '2024-10-17T12:01:10Z'
-  name: e-attendance-deployment-hpa-euve
-  namespace: default
+    app: "e-attendance-deployment"
 spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "e-attendance-deployment"
+    apiVersion: "apps/v1"
+  minReplicas: 1
   maxReplicas: 5
   metrics:
-    - resource:
-        name: cpu
-        target:
-          averageUtilization: 80
-          type: Utilization
-      type: Resource
-  minReplicas: 1
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: e-attendance-deployment
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      target:
+        type: "Utilization"
+        averageUtilization: 80
 ---
-apiVersion: v1
-kind: Service
+apiVersion: "v1"
+kind: "Service"
 metadata:
-  annotations:
-    cloud.google.com/neg: '{"ingress":true}'
-  finalizers:
-    - service.kubernetes.io/load-balancer-cleanup
+  name: "e-attendance-deployment-service"
+  namespace: "default"
   labels:
-    app: e-attendance-deployment
-  managedFields:
-    - apiVersion: v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-        'f:spec':
-          'f:allocateLoadBalancerNodePorts': {}
-          'f:externalTrafficPolicy': {}
-          'f:internalTrafficPolicy': {}
-          'f:ports':
-            .: {}
-            'k:{"port":80,"protocol":"TCP"}':
-              .: {}
-              'f:port': {}
-              'f:protocol': {}
-              'f:targetPort': {}
-          'f:selector': {}
-          'f:sessionAffinity': {}
-          'f:type': {}
-      manager: unknown
-      operation: Update
-      time: '2024-10-17T11:48:50Z'
-    - apiVersion: v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:finalizers':
-            .: {}
-            'v:"service.kubernetes.io/load-balancer-cleanup"': {}
-        'f:status':
-          'f:loadBalancer':
-            'f:ingress': {}
-      manager: cloud-controller-manager
-      operation: Update
-      subresource: status
-      time: '2024-10-17T11:49:26Z'
-  name: e-attendance-deployment-service
-  namespace: default
+    app: "e-attendance-deployment"
 spec:
-  allocateLoadBalancerNodePorts: true
-  clusterIP: 34.118.231.194
-  clusterIPs:
-    - 34.118.231.194
-  externalTrafficPolicy: Cluster
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-    - IPv4
-  ipFamilyPolicy: SingleStack
   ports:
-    - nodePort: 31476
-      port: 80
-      protocol: TCP
-      targetPort: 80
+  - protocol: "TCP"
+    port: 80
+    targetPort: 8000  # Forward traffic from port 80 to container port 8000
   selector:
-    app: e-attendance-deployment
-  sessionAffinity: None
-  type: LoadBalancer
+    app: "e-attendance-deployment"
+  type: "LoadBalancer"
